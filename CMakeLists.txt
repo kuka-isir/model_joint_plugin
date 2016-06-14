@@ -1,13 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(model_joint_plugin)
 
-## Find catkin macros and libraries
-## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
-## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+set(CMAKE_CXX_FLAGS "-std=c++11")
+find_package(catkin REQUIRED rtt_ros cmake_modules)
 
-## System dependencies are found with CMake's conventions
-# find_package(Boost REQUIRED COMPONENTS system)
+find_package(orocos_kdl REQUIRED)
+find_package(Eigen REQUIRED)
 find_package(GAZEBO REQUIRED)
 find_package(Protobuf REQUIRED)
 
@@ -19,135 +17,60 @@ foreach(ITR ${GAZEBO_INCLUDE_DIRS})
 endforeach()
 
 set (msgs
-  joint_state.proto
+  proto/joint_state.proto
   ${PROTOBUF_IMPORT_DIRS}/header.proto
   ${PROTOBUF_IMPORT_DIRS}/time.proto
 )
 
-PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${msgs})
-add_library(joint_state_msgs SHARED ${PROTO_SRCS})
-target_link_libraries(joint_state_msgs ${PROTOBUF_LIBRARY})
-
-## Uncomment this if the package has a setup.py. This macro ensures
-## modules and global scripts declared therein get installed
-## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
-
-################################################
-## Declare ROS messages, services and actions ##
-################################################
-
-## To declare and build messages, services or actions from within this
-## package, follow these steps:
-## * Let MSG_DEP_SET be the set of packages whose message types you use in
-##   your messages/services/actions (e.g. std_msgs, actionlib_msgs, ...).
-## * In the file package.xml:
-##   * add a build_depend tag for "message_generation"
-##   * add a build_depend and a run_depend tag for each package in MSG_DEP_SET
-##   * If MSG_DEP_SET isn't empty the following dependency has been pulled in
-##     but can be declared for certainty nonetheless:
-##     * add a run_depend tag for "message_runtime"
-## * In this file (CMakeLists.txt):
-##   * add "message_generation" and every package in MSG_DEP_SET to
-##     find_package(catkin REQUIRED COMPONENTS ...)
-##   * add "message_runtime" and every package in MSG_DEP_SET to
-##     catkin_package(CATKIN_DEPENDS ...)
-##   * uncomment the add_*_files sections below as needed
-##     and list every .msg/.srv/.action file to be processed
-##   * uncomment the generate_messages entry below
-##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
-
-## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
-
-## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
-
-## Generate actions in the 'action' folder
-# add_action_files(
-#   FILES
-#   Action1.action
-#   Action2.action
-# )
-
-## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
-
-################################################
-## Declare ROS dynamic reconfigure parameters ##
-################################################
-
-## To declare and build dynamic reconfigure parameters within this
-## package, follow these steps:
-## * In the file package.xml:
-##   * add a build_depend and a run_depend tag for "dynamic_reconfigure"
-## * In this file (CMakeLists.txt):
-##   * add "dynamic_reconfigure" to
-##     find_package(catkin REQUIRED COMPONENTS ...)
-##   * uncomment the "generate_dynamic_reconfigure_options" section below
-##     and list every .cfg file to be processed
-
-## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
-
-###################################
-## catkin specific configuration ##
-###################################
-## The catkin_package macro generates cmake config files for your package
-## Declare things to be passed to dependent projects
-## INCLUDE_DIRS: uncomment this if you package contains header files
-## LIBRARIES: libraries you create in this project that dependent projects also need
-## CATKIN_DEPENDS: catkin_packages dependent projects also need
-## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES model_joint_plugin
+  INCLUDE_DIRS include
+  LIBRARIES model_joint_plugin
 #  CATKIN_DEPENDS other_catkin_pkg
-#  DEPENDS GAZEBO Protobuf
+  DEPENDS GAZEBO Protobuf
 )
 
 ###########
 ## Build ##
 ###########
 
-## Specify additional locations of header files
-## Your package locations should be listed before other locations
-# include_directories(include)
-# TODO: Check names of system library include directories (GAZEBO, Protobuf)
+PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${msgs})
+add_library(joint_state_msgs SHARED ${PROTO_SRCS})
+target_link_libraries(joint_state_msgs ${PROTOBUF_LIBRARY})
+set_source_files_properties(${PROTO_SRCS} ${PROTO_HDRS} PROPERTIES
+                            GENERATED TRUE)
+
 include_directories(SYSTEM ${GAZEBO_INCLUDE_DIRS})
 
 include_directories(
+  include
   ${PROJECT_BINARY_DIR}
   ${GAZEBO_INCLUDE_DIRS}
   ${Protobuf_INCLUDE_DIRS}
+  ${EIGEN_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
 add_library(model_joint_plugin
-  model_joint_plugin.cc
+  src/model_joint_plugin.cc
 )
 
+orocos_component(manipulator_sim
+  src/manipulator_sim.cc
+)
+target_link_libraries(manipulator_sim
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+  ${Protobuf_LIBRARIES}
+  joint_state_msgs
+  ${orocos_kdl_LIBRARIES}
+)
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
 # add_dependencies(model_joint_plugin ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(model_joint_listener_test model_joint_listener_test.cc)
+add_executable(model_joint_listener_test src/model_joint_listener_test.cc)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -200,16 +123,6 @@ install(FILES
   ${PROTO_HDRS}
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
+orocos_generate_package(INCLUDE_DIRS include)
 
-#############
-## Testing ##
-#############
-
-## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_model_joint_plugin.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
-
-## Add folders to be run by python nosetests
-# catkin_add_nosetests(test)
+orocos_install_headers(DIRECTORY include)
