@@ -1,0 +1,14 @@
+#!/usr/bin/env deployer
+
+require("os")
+import("rtt_ros")
+ros.import("rtt_rosnode")
+ros.import("model_joint_plugin")
+
+loadComponent("m","ManipulatorSim")
+setActivity("m",0,15,ORO_SCHED_RT)
+m.argv = os.argv();
+
+configureComponent("m")
+
+

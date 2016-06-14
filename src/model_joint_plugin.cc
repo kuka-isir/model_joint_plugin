@@ -61,7 +61,7 @@ void ModelJointPlugin::WorldUpdateEnd()
         i++;
     }
     
-    statePub->Publish(state/*,true*/);
+    statePub->Publish(state,true);
     
     if(statePub->HasConnections())
         n_status_sent++;

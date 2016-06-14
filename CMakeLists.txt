@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 2.8.3)
 project(model_joint_plugin)
 
 set(CMAKE_CXX_FLAGS "-std=c++11")
+set(CMAKE_BUILD_TYPE Release)
+
+
 find_package(catkin REQUIRED rtt_ros cmake_modules)
 
 find_package(orocos_kdl REQUIRED)
@@ -22,12 +25,12 @@ set (msgs
   ${PROTOBUF_IMPORT_DIRS}/time.proto
 )
 
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES model_joint_plugin
-#  CATKIN_DEPENDS other_catkin_pkg
-  DEPENDS GAZEBO Protobuf
-)
+# catkin_package(
+#   INCLUDE_DIRS include
+#   LIBRARIES model_joint_plugin
+# #  CATKIN_DEPENDS other_catkin_pkg
+#   DEPENDS GAZEBO Protobuf
+# )
 
 ###########
 ## Build ##
@@ -123,6 +126,9 @@ install(FILES
   ${PROTO_HDRS}
   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
 )
-orocos_generate_package(INCLUDE_DIRS include)
 
 orocos_install_headers(DIRECTORY include)
+
+orocos_generate_package(INCLUDE_DIRS include)
+
+
