@@ -7,8 +7,7 @@ ros.import("model_joint_plugin")
 
 loadComponent("m","ManipulatorSim")
 setActivity("m",0,15,ORO_SCHED_RT)
-m.argv = os.argv();
 
+m.argv = os.argv()
+m.argv = strings("--verbose")
 configureComponent("m")
-
-

@@ -23,6 +23,7 @@ ManipulatorSim::ManipulatorSim(const std::string& name):
 void ManipulatorSim::gazeboStateCallback(ManipulatorSim::ConstJointStatePtr& _msg)
 {
     static bool rec_one = false;
+    joint_state_msgs::msgs::JointState msg_out;
     // Dump the message contents to stdout.
 //     std::cout << _msg->time().sec()<<" " <<_msg->time().nsec()<<std::endl;
 
@@ -45,9 +46,7 @@ void ManipulatorSim::gazeboStateCallback(ManipulatorSim::ConstJointStatePtr& _ms
         port_joint_position_out.setDataSample(jnt_pos_out);
         port_joint_velocity_out.setDataSample(jnt_vel_out);
         port_joint_torque_out.setDataSample(jnt_trq_out);
-        
-        msg_out.CopyFrom(*_msg);
-        
+                
         rec_one = true;
         this->start();
     }
@@ -57,41 +56,16 @@ void ManipulatorSim::gazeboStateCallback(ManipulatorSim::ConstJointStatePtr& _ms
     jnt_trq_out = Map<const VectorXd>(_msg->effort().data(),eff_size);
     
     if(port_joint_position_cmd_in.read(jnt_pos_cmd_in) == RTT::NewData)
-    {
-        if(jnt_pos_cmd_in.size() != eff_size)
-        {
-            log(Error) << "size of "<< port_joint_position_cmd_in.getName() 
-                        << " = "<<jnt_pos_cmd_in.size() 
-                        << " does not match gazebo size = "
-                        << pos_size << endlog();
-        }else{
-            Map<VectorXd>(msg_out.mutable_position()->mutable_data(),pos_size) = jnt_pos_cmd_in;
-        }
-    }
+        for(int i=0;i<jnt_pos_cmd_in.size();++i)
+            msg_out.add_position(jnt_pos_cmd_in[i]);
+        
     if(port_joint_velocity_cmd_in.read(jnt_vel_cmd_in)== RTT::NewData)
-    {
-        if(jnt_vel_cmd_in.size() != eff_size)
-        {
-            log(Error) << "size of "<< port_joint_velocity_cmd_in.getName() 
-                        << " = "<<jnt_vel_cmd_in.size() 
-                        << " does not match gazebo size = "
-                        << vel_size << endlog();
-        }else{
-            Map<VectorXd>(msg_out.mutable_velocity()->mutable_data(),vel_size) = jnt_vel_cmd_in;
-        }
-    }
+        for(int i=0;i<jnt_vel_cmd_in.size();++i)
+            msg_out.add_velocity(jnt_vel_cmd_in[i]);
+        
     if(port_joint_torque_cmd_in.read(jnt_trq_cmd_in)== RTT::NewData)
-    {
-        if(jnt_trq_cmd_in.size() != eff_size)
-        {
-            log(Error) << "size of "<< port_joint_torque_cmd_in.getName() 
-                        << " = "<<jnt_trq_cmd_in.size() 
-                        << " does not match gazebo size = "
-                        << eff_size << endlog();
-        }else{
-            Map<VectorXd>(msg_out.mutable_effort()->mutable_data(),eff_size) = jnt_trq_cmd_in;
-        }
-    }
+        for(int i=0;i<jnt_trq_cmd_in.size();++i)
+            msg_out.add_effort(jnt_trq_cmd_in[i]);
     
     port_joint_position_out.write(jnt_pos_out);
     port_joint_velocity_out.write(jnt_vel_out);

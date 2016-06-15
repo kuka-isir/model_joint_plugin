@@ -83,9 +83,24 @@ void ModelJointPlugin::WorldUpdateEnd()
             std::cout << "gz real     : "<<world->GetRealTime()<<std::endl;
         }
         
-        cmd.position();
-        cmd.velocity();
-        cmd.effort();
+        auto joints = model->GetJoints();
+        for(int i=0;i<cmd.position_size();++i)
+        {
+#ifdef GAZEBO_GREATER_6
+            joints[i]->SetPosition(0,cmd.position(i));
+#else
+            joints[i]->SetAngle(0,cmd.position(i));
+#endif
+        }
+        for(int i=0;i<cmd.velocity_size();++i)
+        {
+            joints[i]->SetVelocity(0,cmd.velocity(i));
+        }
+        for(int i=0;i<cmd.effort_size();++i)
+        {
+            joints[i]->SetForce(0,cmd.effort(i));
+        }
+
     }
 }
     

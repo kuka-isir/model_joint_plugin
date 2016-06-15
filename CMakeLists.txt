@@ -12,6 +12,13 @@ find_package(Eigen REQUIRED)
 find_package(GAZEBO REQUIRED)
 find_package(Protobuf REQUIRED)
 
+if(GAZEBO_VERSION)
+  if(${GAZEBO_VERSION} GREATER 6)
+      add_definitions(-DGAZEBO_GREATER_6)
+  endif()
+endif()
+
+
 set(PROTOBUF_IMPORT_DIRS)
 foreach(ITR ${GAZEBO_INCLUDE_DIRS})
   if(ITR MATCHES ".*gazebo-[0-9.]+$")

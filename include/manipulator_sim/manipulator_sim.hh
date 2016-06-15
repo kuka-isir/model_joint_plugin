@@ -49,7 +49,6 @@ class ManipulatorSim : public RTT::TaskContext{
         void stopHook();
         void gazeboStateCallback(ManipulatorSim::ConstJointStatePtr& _msg);
     protected:
-        joint_state_msgs::msgs::JointState msg_out;
         gazebo::transport::PublisherPtr gz_state_pub;
         std::vector<std::string> argv;
         gazebo::transport::NodePtr gz_node;
