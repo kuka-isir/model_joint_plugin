@@ -25,7 +25,7 @@ void ModelJointPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
     node = transport::NodePtr(new transport::Node());
     node->Init();
     
-    statePub = node->Advertise<joint_state_msgs::msgs::JointState>("~/joint_states");
+    statePub = node->Advertise<joint_state_msgs::msgs::JointState>("~/" + model->GetName() + "/joint_states");
     cmdSub = node->Subscribe("~/joint_states_command", &ModelJointPlugin::onCommand,this/*,true*/);
 
     this->world_up_begin = event::Events::ConnectWorldUpdateBegin(std::bind(&ModelJointPlugin::WorldUpdateBegin, this));
@@ -74,15 +74,17 @@ void ModelJointPlugin::WorldUpdateEnd()
         // Here we get all the cmd from users, if we have sent at least N status
         if(statePub->HasConnections() && n_status_sent >= nb_status_needed_to_wait_for_cmd)
         {
-            //std::cout << "Waiting on command..."<<std::endl;
-//                 if(cmd_cond.wait_for(lk,std::chrono::microseconds(2000000)) == std::cv_status::timeout)
-//                 {
-//                     gzerr << " Timeout, connection lost or update rate too slow !"<<std::endl;
-//                 }
+                //std::cout << "Waiting on command..."<<std::endl;
+                if(cmd_cond.wait_for(lk,std::chrono::microseconds(2000000)) == std::cv_status::timeout)
+                {
+                    gzerr << " Timeout, connection lost or update rate too slow !"<<std::endl;
+                    this->world->EnablePhysicsEngine(false);
+                    return;
+                }
             
             std::cout << "gz real     : "<<world->GetRealTime()<<std::endl;
         }
-        
+        this->world->EnablePhysicsEngine(true);
         auto joints = model->GetJoints();
         for(int i=0;i<cmd.position_size();++i)
         {

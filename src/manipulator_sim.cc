@@ -55,15 +55,15 @@ void ManipulatorSim::gazeboStateCallback(ManipulatorSim::ConstJointStatePtr& _ms
     jnt_vel_out = Map<const VectorXd>(_msg->velocity().data(),vel_size);
     jnt_trq_out = Map<const VectorXd>(_msg->effort().data(),eff_size);
     
-    if(port_joint_position_cmd_in.read(jnt_pos_cmd_in) == RTT::NewData)
+    if(port_joint_position_cmd_in.read(jnt_pos_cmd_in)  == RTT::NewData)
         for(int i=0;i<jnt_pos_cmd_in.size();++i)
             msg_out.add_position(jnt_pos_cmd_in[i]);
         
-    if(port_joint_velocity_cmd_in.read(jnt_vel_cmd_in)== RTT::NewData)
+    if(port_joint_velocity_cmd_in.read(jnt_vel_cmd_in)  == RTT::NewData)
         for(int i=0;i<jnt_vel_cmd_in.size();++i)
             msg_out.add_velocity(jnt_vel_cmd_in[i]);
         
-    if(port_joint_torque_cmd_in.read(jnt_trq_cmd_in)== RTT::NewData)
+    if(port_joint_torque_cmd_in.read(jnt_trq_cmd_in)    == RTT::NewData)
         for(int i=0;i<jnt_trq_cmd_in.size();++i)
             msg_out.add_effort(jnt_trq_cmd_in[i]);
     
@@ -83,8 +83,8 @@ bool ManipulatorSim::configureHook()
     gz_node.reset(new gazebo::transport::Node());
     gz_node->Init();
     // Listen to Gazebo world_stats topic
-    gz_state_sub = gz_node->Subscribe("~/joint_states", &ManipulatorSim::gazeboStateCallback,this/*,true*/);
-    gz_state_pub = gz_node->Advertise<joint_state_msgs::msgs::JointState>("~/joint_states_command");
+    gz_state_sub = gz_node->Subscribe("~/" + this->getName() + "/joint_states", &ManipulatorSim::gazeboStateCallback,this/*,true*/);
+    gz_state_pub = gz_node->Advertise<joint_state_msgs::msgs::JointState>("~/" + this->getName() + "/joint_states_command");
 
     return true;
 }
