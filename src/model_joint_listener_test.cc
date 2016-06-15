@@ -6,7 +6,7 @@
 typedef const boost::shared_ptr<
     const joint_state_msgs::msgs::JointState>
     ConstJointStatePtr;
-    
+
 gazebo::transport::PublisherPtr pub;
 /////////////////////////////////////////////////
 // Function is called everytime a message is received.

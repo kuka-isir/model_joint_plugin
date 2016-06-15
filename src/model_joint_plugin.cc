@@ -7,7 +7,7 @@ void ModelJointPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
     n_status_sent = 0;
     this->model = _parent;
     this->world = model->GetWorld();
-    
+
     for(auto j:model->GetJoints())
     {
         state.add_position(0.0);
@@ -19,14 +19,14 @@ void ModelJointPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
         state.add_name(j->GetName());
         cmd.add_name(j->GetName());
     }
-    
+
     state.set_allocated_time(&time);
-    
+
     node = transport::NodePtr(new transport::Node());
     node->Init();
-    
+
     statePub = node->Advertise<joint_state_msgs::msgs::JointState>("~/" + model->GetName() + "/joint_states");
-    cmdSub = node->Subscribe("~/joint_states_command", &ModelJointPlugin::onCommand,this/*,true*/);
+    cmdSub = node->Subscribe("~/" + model->GetName() + "/joint_states_command", &ModelJointPlugin::onCommand,this/*,true*/);
 
     this->world_up_begin = event::Events::ConnectWorldUpdateBegin(std::bind(&ModelJointPlugin::WorldUpdateBegin, this));
     this->world_up_end = event::Events::ConnectWorldUpdateEnd(std::bind(&ModelJointPlugin::WorldUpdateEnd, this));
@@ -51,8 +51,8 @@ void ModelJointPlugin::WorldUpdateEnd()
     common::Time t  = world->GetRealTime();
     time.set_sec(t.sec);
     time.set_nsec(t.nsec);
-    
-            
+
+
     for(auto j:model->GetJoints())
     {
         state.set_position(i, j->GetAngle(0).Radian());
@@ -60,14 +60,14 @@ void ModelJointPlugin::WorldUpdateEnd()
         state.set_effort(i, j->GetForce(0u));
         i++;
     }
-    
+
     statePub->Publish(state,true);
-    
+
     if(statePub->HasConnections())
         n_status_sent++;
     else
         n_status_sent=0;
-    
+
     //std::cout << "New status sent"<<std::endl;
         {
         std::unique_lock<std::mutex> lk(mtx);
@@ -81,7 +81,7 @@ void ModelJointPlugin::WorldUpdateEnd()
                     this->world->EnablePhysicsEngine(false);
                     return;
                 }
-            
+
             std::cout << "gz real     : "<<world->GetRealTime()<<std::endl;
         }
         this->world->EnablePhysicsEngine(true);
@@ -105,5 +105,5 @@ void ModelJointPlugin::WorldUpdateEnd()
 
     }
 }
-    
+
 }

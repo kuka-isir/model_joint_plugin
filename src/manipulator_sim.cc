@@ -46,7 +46,7 @@ void ManipulatorSim::gazeboStateCallback(ManipulatorSim::ConstJointStatePtr& _ms
         port_joint_position_out.setDataSample(jnt_pos_out);
         port_joint_velocity_out.setDataSample(jnt_vel_out);
         port_joint_torque_out.setDataSample(jnt_trq_out);
-                
+
         rec_one = true;
         this->start();
     }
@@ -54,23 +54,23 @@ void ManipulatorSim::gazeboStateCallback(ManipulatorSim::ConstJointStatePtr& _ms
     jnt_pos_out = Map<const VectorXd>(_msg->position().data(),pos_size);
     jnt_vel_out = Map<const VectorXd>(_msg->velocity().data(),vel_size);
     jnt_trq_out = Map<const VectorXd>(_msg->effort().data(),eff_size);
-    
+
     if(port_joint_position_cmd_in.read(jnt_pos_cmd_in)  == RTT::NewData)
         for(int i=0;i<jnt_pos_cmd_in.size();++i)
             msg_out.add_position(jnt_pos_cmd_in[i]);
-        
+
     if(port_joint_velocity_cmd_in.read(jnt_vel_cmd_in)  == RTT::NewData)
         for(int i=0;i<jnt_vel_cmd_in.size();++i)
             msg_out.add_velocity(jnt_vel_cmd_in[i]);
-        
+
     if(port_joint_torque_cmd_in.read(jnt_trq_cmd_in)    == RTT::NewData)
         for(int i=0;i<jnt_trq_cmd_in.size();++i)
             msg_out.add_effort(jnt_trq_cmd_in[i]);
-    
+
     port_joint_position_out.write(jnt_pos_out);
     port_joint_velocity_out.write(jnt_vel_out);
     port_joint_torque_out.write(jnt_trq_out);
-    
+
     gz_state_pub->Publish(msg_out,true);
 }
 
