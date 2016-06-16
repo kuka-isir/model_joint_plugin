@@ -68,10 +68,10 @@ add_library(model_joint_plugin
   src/model_joint_plugin.cc
 )
 
-orocos_component(manipulator_sim
-  src/manipulator_sim.cc
+orocos_component(gz_model_remote_interface
+  src/gz_model_remote_interface.cc
 )
-target_link_libraries(manipulator_sim
+target_link_libraries(gz_model_remote_interface
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
   ${Protobuf_LIBRARIES}

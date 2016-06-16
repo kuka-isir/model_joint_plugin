@@ -1,4 +1,4 @@
-// manipulator_sim - ISIR Mon 06 Jun 2016 03:35:07 PM CEST
+// gz_model_remote_interface - ISIR Mon 06 Jun 2016 03:35:07 PM CEST
 // Copyright (c) Antoine Hoarau, All rights reserved.
 //
 // This library is free software; you can redistribute it and/or
@@ -30,7 +30,7 @@
 #include <gazebo/transport/transport.hh>
 #include <gazebo/msgs/msgs.hh>
 #include <gazebo/gazebo_client.hh>
-#include "joint_state.pb.h"
+#include "model_joint_plugin/joint_state.pb.h"
 
 
 class ManipulatorSim : public RTT::TaskContext{

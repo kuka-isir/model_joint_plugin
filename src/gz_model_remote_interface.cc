@@ -1,4 +1,4 @@
-#include "manipulator_sim/manipulator_sim.hh"
+#include "gz_model_remote_interface/gz_model_remote_interface.hh"
 
 using namespace RTT;
 using namespace std;
