@@ -48,6 +48,10 @@ add_library(joint_state_msgs SHARED ${PROTO_SRCS})
 target_link_libraries(joint_state_msgs ${PROTOBUF_LIBRARY})
 set_source_files_properties(${PROTO_SRCS} ${PROTO_HDRS} PROPERTIES
                             GENERATED TRUE)
+file(COPY
+  ${PROTO_HDRS}
+  DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
 
 include_directories(SYSTEM ${GAZEBO_INCLUDE_DIRS})
 
