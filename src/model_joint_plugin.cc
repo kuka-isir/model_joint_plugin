@@ -35,6 +35,7 @@ void ModelJointPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 void ModelJointPlugin::onCommand(ConstJointStatePtr& cmd_in)
 {
     {
+        std::cout << "wait...";
         std::lock_guard<std::mutex> lk(mtx);
         cmd = *cmd_in;
     }
@@ -61,7 +62,7 @@ void ModelJointPlugin::WorldUpdateEnd()
         i++;
     }
 
-    statePub->Publish(state,true);
+    statePub->Publish(state/*,true*/);
 
     if(statePub->HasConnections())
         n_status_sent++;
@@ -69,21 +70,27 @@ void ModelJointPlugin::WorldUpdateEnd()
         n_status_sent=0;
 
     //std::cout << "New status sent"<<std::endl;
-        {
-        std::unique_lock<std::mutex> lk(mtx);
+    {
+      if(!mtx.try_lock())
+      {
+	gzerr << " Timeout, connection lost or update rate too slow !"<<std::endl;
+	this->world->EnablePhysicsEngine(false);
+	return;
+      }
+//         std::unique_lock<std::mutex> lk(mtx);
         // Here we get all the cmd from users, if we have sent at least N status
-        if(statePub->HasConnections() && n_status_sent >= nb_status_needed_to_wait_for_cmd)
-        {
-                //std::cout << "Waiting on command..."<<std::endl;
-                if(cmd_cond.wait_for(lk,std::chrono::microseconds(2000000)) == std::cv_status::timeout)
-                {
-                    gzerr << " Timeout, connection lost or update rate too slow !"<<std::endl;
-                    this->world->EnablePhysicsEngine(false);
-                    return;
-                }
-
-            std::cout << "gz real     : "<<world->GetRealTime()<<std::endl;
-        }
+//         if(statePub->HasConnections() && n_status_sent >= nb_status_needed_to_wait_for_cmd)
+//         {
+//                 //std::cout << "Waiting on command..."<<std::endl;
+//                 if(cmd_cond.wait_for(lk,std::chrono::microseconds(2000000)) == std::cv_status::timeout)
+//                 {
+//                     gzerr << " Timeout, connection lost or update rate too slow !"<<std::endl;
+//                     this->world->EnablePhysicsEngine(false);
+//                     return;
+//                 }
+// 
+//             std::cout << "gz real     : "<<world->GetRealTime()<<std::endl;
+//         }
         this->world->EnablePhysicsEngine(true);
         auto joints = model->GetJoints();
         for(int i=0;i<cmd.position_size();++i)
@@ -102,8 +109,9 @@ void ModelJointPlugin::WorldUpdateEnd()
         {
             joints[i]->SetForce(0,cmd.effort(i));
         }
-
+        mtx.unlock();
     }
+
 }
 
 }

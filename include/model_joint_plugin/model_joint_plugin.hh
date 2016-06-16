@@ -13,7 +13,7 @@ namespace gazebo
     typedef const boost::shared_ptr<
   const joint_state_msgs::msgs::JointState>
     ConstJointStatePtr;
-    
+
 class ModelJointPlugin : public ModelPlugin
 {
 public:
@@ -35,7 +35,7 @@ private:
     physics::WorldPtr world;
     std::mutex mtx;
     std::condition_variable cmd_cond,status_cond;
-    const int nb_status_needed_to_wait_for_cmd = 1;
+    const int nb_status_needed_to_wait_for_cmd = 10;
     int n_status_sent;
 };
 
