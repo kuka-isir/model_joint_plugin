@@ -71,7 +71,7 @@ void ManipulatorSim::gazeboStateCallback(ManipulatorSim::ConstJointStatePtr& _ms
     port_joint_velocity_out.write(jnt_vel_out);
     port_joint_torque_out.write(jnt_trq_out);
 
-    gz_state_pub->Publish(msg_out,true);
+    gz_state_pub->Publish(msg_out/*,true*/);
 }
 
 bool ManipulatorSim::configureHook()
