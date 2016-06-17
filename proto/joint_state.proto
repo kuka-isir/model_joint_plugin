@@ -1,5 +1,4 @@
 package joint_state_msgs.msgs;
-import "header.proto";
 import "time.proto";
 
 message JointState

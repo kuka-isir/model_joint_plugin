@@ -37,16 +37,25 @@ set (msgs
 ###########
 ## Build ##
 ###########
-
+set(CMAKE_POSITION_INDEPENDENT_CODE "TRUE")
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${msgs})
-orocos_library(joint_state_msgs SHARED ${PROTO_SRCS})
+orocos_library(joint_state_msgs STATIC ${PROTO_SRCS})
 target_link_libraries(joint_state_msgs ${PROTOBUF_LIBRARY})
 set_source_files_properties(${PROTO_SRCS} ${PROTO_HDRS} PROPERTIES
                             GENERATED TRUE)
-file(COPY
-  ${PROTO_HDRS}
-  DESTINATION ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-)
+
+add_custom_target(copy_joint_state_msgs DEPENDS joint_state_msgs)
+foreach(header ${PROTO_HDRS})
+    set(destination ${PROJECT_SOURCE_DIR}/include/${PROJECT_NAME})
+    message( "${header} --> ${destination}")
+    add_custom_command(TARGET copy_joint_state_msgs PRE_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E
+                         copy ${header} ${destination}
+                     MAIN_DEPENDENCY copy_joint_state_msgs)
+endforeach()
+
+add_custom_target(run ALL
+        DEPENDS copy_joint_state_msgs)
 
 include_directories(SYSTEM ${GAZEBO_INCLUDE_DIRS})
 
@@ -59,7 +68,7 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(model_joint_plugin
+orocos_library(model_joint_plugin
   src/model_joint_plugin.cc
 )
 
@@ -79,7 +88,7 @@ target_link_libraries(gz_model_remote_interface
 # add_dependencies(model_joint_plugin ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
-add_executable(model_joint_listener_test src/model_joint_listener_test.cc)
+orocos_executable(model_joint_listener_test src/model_joint_listener_test.cc)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -136,4 +145,5 @@ install(FILES
 
 orocos_install_headers(DIRECTORY include)
 orocos_install_headers(${PROTO_HDRS})
+
 orocos_generate_package(INCLUDE_DIRS include)
