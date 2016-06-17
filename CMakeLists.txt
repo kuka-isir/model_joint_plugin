@@ -39,7 +39,7 @@ set (msgs
 ###########
 set(CMAKE_POSITION_INDEPENDENT_CODE "TRUE")
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${msgs})
-orocos_library(joint_state_msgs STATIC ${PROTO_SRCS})
+orocos_library(joint_state_msgs SHARED ${PROTO_SRCS})
 target_link_libraries(joint_state_msgs ${PROTOBUF_LIBRARY})
 set_source_files_properties(${PROTO_SRCS} ${PROTO_HDRS} PROPERTIES
                             GENERATED TRUE)
