@@ -32,19 +32,14 @@ set (msgs
   ${PROTOBUF_IMPORT_DIRS}/time.proto
 )
 
-# catkin_package(
-#   INCLUDE_DIRS include
-#   LIBRARIES model_joint_plugin
-# #  CATKIN_DEPENDS other_catkin_pkg
-#   DEPENDS GAZEBO Protobuf
-# )
+
 
 ###########
 ## Build ##
 ###########
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${msgs})
-add_library(joint_state_msgs SHARED ${PROTO_SRCS})
+orocos_library(joint_state_msgs SHARED ${PROTO_SRCS})
 target_link_libraries(joint_state_msgs ${PROTOBUF_LIBRARY})
 set_source_files_properties(${PROTO_SRCS} ${PROTO_HDRS} PROPERTIES
                             GENERATED TRUE)
@@ -140,5 +135,5 @@ install(FILES
 )
 
 orocos_install_headers(DIRECTORY include)
-
+orocos_install_headers(${PROTO_HDRS})
 orocos_generate_package(INCLUDE_DIRS include)
