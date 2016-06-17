@@ -5,7 +5,7 @@ using namespace std;
 using namespace RTT::os;
 using namespace Eigen;
 
-ManipulatorSim::ManipulatorSim(const std::string& name):
+GazeboModelRemoteInterface::GazeboModelRemoteInterface(const std::string& name):
     RTT::TaskContext(name)
 {
     this->addPort("JointPosition",port_joint_position_out).doc("Current joint positions");
@@ -20,12 +20,12 @@ ManipulatorSim::ManipulatorSim(const std::string& name):
     this->addAttribute("pos",jnt_pos_out);
 
 }
-void ManipulatorSim::gazeboStateCallback(ManipulatorSim::ConstJointStatePtr& _msg)
+void GazeboModelRemoteInterface::gazeboStateCallback(GazeboModelRemoteInterface::ConstJointStatePtr& _msg)
 {
     static bool rec_one = false;
-    joint_state_msgs::msgs::JointState msg_out;
+
     // Dump the message contents to stdout.
-//     std::cout << _msg->time().sec()<<" " <<_msg->time().nsec()<<std::endl;
+    // std::cout << _msg->time().sec()<<" " <<_msg->time().nsec()<<std::endl;
 
     size_t pos_size = _msg->position().size();
     size_t vel_size = _msg->velocity().size();
@@ -33,8 +33,6 @@ void ManipulatorSim::gazeboStateCallback(ManipulatorSim::ConstJointStatePtr& _ms
 
     if(!rec_one)
     {
-
-
         jnt_pos_cmd_in.setZero(pos_size);
         jnt_vel_cmd_in.setZero(vel_size);
         jnt_trq_cmd_in.setZero(eff_size);
@@ -50,6 +48,8 @@ void ManipulatorSim::gazeboStateCallback(ManipulatorSim::ConstJointStatePtr& _ms
         rec_one = true;
         this->start();
     }
+
+    joint_state_msgs::msgs::JointState msg_out;
 
     jnt_pos_out = Map<const VectorXd>(_msg->position().data(),pos_size);
     jnt_vel_out = Map<const VectorXd>(_msg->velocity().data(),vel_size);
@@ -74,7 +74,7 @@ void ManipulatorSim::gazeboStateCallback(ManipulatorSim::ConstJointStatePtr& _ms
     gz_state_pub->Publish(msg_out/*,true*/);
 }
 
-bool ManipulatorSim::configureHook()
+bool GazeboModelRemoteInterface::configureHook()
 {
 
     gazebo::client::printVersion();
@@ -83,28 +83,28 @@ bool ManipulatorSim::configureHook()
     gz_node.reset(new gazebo::transport::Node());
     gz_node->Init();
     // Listen to Gazebo world_stats topic
-    gz_state_sub = gz_node->Subscribe("~/" + this->getName() + "/joint_states", &ManipulatorSim::gazeboStateCallback,this/*,true*/);
+    gz_state_sub = gz_node->Subscribe("~/" + this->getName() + "/joint_states", &GazeboModelRemoteInterface::gazeboStateCallback,this/*,true*/);
     gz_state_pub = gz_node->Advertise<joint_state_msgs::msgs::JointState>("~/" + this->getName() + "/joint_states_command");
 
     return true;
 }
-bool ManipulatorSim::startHook()
+bool GazeboModelRemoteInterface::startHook()
 {
     return true;
 }
 
-void ManipulatorSim::updateHook()
+void GazeboModelRemoteInterface::updateHook()
 {
 
 }
-void ManipulatorSim::stopHook()
+void GazeboModelRemoteInterface::stopHook()
 {
     Logger::In(this->getName());
     log(Info) << "stopHook()" << endlog();
 
 }
 
-void ManipulatorSim::cleanupHook()
+void GazeboModelRemoteInterface::cleanupHook()
 {
     Logger::In(this->getName());
     log(Info) << "cleanupHook() --> Shutting down gazebo...";
@@ -115,4 +115,4 @@ void ManipulatorSim::cleanupHook()
 }
 
 // Let orocos know how to create the component
-ORO_CREATE_COMPONENT(ManipulatorSim)
+ORO_CREATE_COMPONENT(GazeboModelRemoteInterface)

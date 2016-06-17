@@ -25,36 +25,32 @@
 // Eigen
 #include <Eigen/Dense>
 // RTT-ROS Utilities
-#include <rtt_ros_kdl_tools/tools.hpp>
-#include <rtt_ros_kdl_tools/chain_utils.hpp>
 #include <gazebo/transport/transport.hh>
 #include <gazebo/msgs/msgs.hh>
 #include <gazebo/gazebo_client.hh>
 #include "model_joint_plugin/joint_state.pb.h"
 
 
-class ManipulatorSim : public RTT::TaskContext{
+class GazeboModelRemoteInterface : public RTT::TaskContext{
 
     typedef const boost::shared_ptr<
         const joint_state_msgs::msgs::JointState>
     ConstJointStatePtr;
 
     public:
-        ManipulatorSim(const std::string& name);
-        virtual ~ManipulatorSim(){};
-        void updateHook();
-        bool configureHook();
-        void cleanupHook();
-        bool startHook();
-        void stopHook();
-        void gazeboStateCallback(ManipulatorSim::ConstJointStatePtr& _msg);
+        GazeboModelRemoteInterface(const std::string& name);
+        virtual ~GazeboModelRemoteInterface(){};
+        virtual void updateHook();
+        virtual bool configureHook();
+        virtual void cleanupHook();
+        virtual bool startHook();
+        virtual void stopHook();
+        void gazeboStateCallback(GazeboModelRemoteInterface::ConstJointStatePtr& _msg);
     protected:
         gazebo::transport::PublisherPtr gz_state_pub;
         std::vector<std::string> argv;
         gazebo::transport::NodePtr gz_node;
         gazebo::transport::SubscriberPtr gz_state_sub;
-        // Generic Model that uses ROS param
-        rtt_ros_kdl_tools::ChainUtils arm;
         // Input ports
         RTT::OutputPort<Eigen::VectorXd>  port_joint_position_out,
                                          port_joint_velocity_out,
