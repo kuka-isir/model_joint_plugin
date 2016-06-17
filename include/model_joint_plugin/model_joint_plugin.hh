@@ -6,7 +6,7 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
-#include "joint_state.pb.h"
+#include "model_joint_plugin/joint_state.pb.h"
 
 namespace gazebo
 {

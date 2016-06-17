@@ -57,7 +57,7 @@ include_directories(SYSTEM ${GAZEBO_INCLUDE_DIRS})
 
 include_directories(
   include
-  ${PROJECT_BINARY_DIR}
+  ${PROJECT_BINARY_DIR}/../ # for protobuf
   ${GAZEBO_INCLUDE_DIRS}
   ${Protobuf_INCLUDE_DIRS}
   ${EIGEN_INCLUDE_DIRS}
@@ -88,6 +88,7 @@ add_executable(model_joint_listener_test src/model_joint_listener_test.cc)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
+add_dependencies(gz_model_remote_interface joint_state_msgs)
 add_dependencies(model_joint_plugin joint_state_msgs)
 add_dependencies(model_joint_listener_test joint_state_msgs)
 
@@ -141,5 +142,3 @@ install(FILES
 orocos_install_headers(DIRECTORY include)
 
 orocos_generate_package(INCLUDE_DIRS include)
-
-

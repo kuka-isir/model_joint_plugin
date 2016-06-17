@@ -1,7 +1,7 @@
 #include <gazebo/transport/transport.hh>
 #include <gazebo/msgs/msgs.hh>
 #include <gazebo/gazebo_client.hh>
-#include "joint_state.pb.h"
+#include "model_joint_plugin/joint_state.pb.h"
 
 typedef const boost::shared_ptr<
     const joint_state_msgs::msgs::JointState>
