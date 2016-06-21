@@ -21,7 +21,7 @@ public:
 public:
     void onCommand(ConstJointStatePtr& cmd_in);
 public:
-    void WorldUpdateBegin();
+//     void WorldUpdateBegin();
     void WorldUpdateEnd();
 
 private:
@@ -37,6 +37,8 @@ private:
     std::condition_variable cmd_cond,status_cond;
     const int nb_status_needed_to_wait_for_cmd = 10;
     int n_status_sent;
+    std::map<std::string,int> joint_idx_map;
+    bool flag = true;
 };
 
 // Register this plugin with the simulator

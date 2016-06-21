@@ -13,7 +13,7 @@ gazebo::transport::PublisherPtr pub;
 void cb(ConstJointStatePtr&_msg)
 {
   // Dump the message contents to stdout.
-  std::cout << _msg->time().sec()<<" " <<_msg->time().nsec()<<std::endl;
+  // std::cout << _msg->time().sec()<<" " <<_msg->time().nsec()<<std::endl;
   pub->Publish(*_msg,true);
 }
 
