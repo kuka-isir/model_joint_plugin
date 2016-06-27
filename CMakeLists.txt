@@ -33,7 +33,8 @@ set (msgs
   proto/joint_state.proto
 )
 
-catkin_package(LIBRARIES joint_state_msgs model_joint_plugin)
+catkin_package(LIBRARIES joint_state_msgs model_joint_plugin
+INCLUDE_DIRS include)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE "TRUE")
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${msgs})
