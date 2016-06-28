@@ -35,7 +35,7 @@ private:
     physics::WorldPtr world;
     std::mutex mtx;
     std::condition_variable cmd_cond,status_cond;
-    const int nb_status_needed_to_wait_for_cmd = 10;
+    const int nb_status_needed_to_wait_for_cmd = 1;
     int n_status_sent;
     std::map<std::string,int> joint_idx_map;
     bool flag = true;
