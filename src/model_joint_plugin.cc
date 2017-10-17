@@ -1,6 +1,13 @@
 #include "model_joint_plugin/model_joint_plugin.hh"
+#include "joint_state.pb.h" // generated protobuf header
+
 namespace gazebo {
 
+ModelJointPlugin::ModelJointPlugin()
+: cmd(new joint_state_msgs::msgs::JointState)
+, state(new joint_state_msgs::msgs::JointState)
+{}
+    
 void ModelJointPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 {
     // Store the pointer to the model
@@ -11,19 +18,19 @@ void ModelJointPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
     int i=0;
     for(auto j:model->GetJoints())
     {
-        state.add_position(0.0);
-        state.add_velocity(0.0);
-        state.add_effort(0.0);
-        cmd.add_position(0.0);
-        cmd.add_velocity(0.0);
-        cmd.add_effort(0.0);
-        state.add_name(j->GetName());
-        cmd.add_name(j->GetName());
+        state->add_position(0.0);
+        state->add_velocity(0.0);
+        state->add_effort(0.0);
+        cmd->add_position(0.0);
+        cmd->add_velocity(0.0);
+        cmd->add_effort(0.0);
+        state->add_name(j->GetName());
+        cmd->add_name(j->GetName());
         joint_idx_map[j->GetName()] = i;
         i++;
     }
 
-    //state.set_allocated_time(&time);
+    //state->set_allocated_time(&time);
 
     node = transport::NodePtr(new transport::Node());
     node->Init();
@@ -42,7 +49,7 @@ void ModelJointPlugin::onCommand(ConstJointStatePtr& cmd_in)
     {
 //         std::cout << "wait...";
         std::lock_guard<std::mutex> lk(mtx);
-        cmd = *cmd_in;
+        *cmd = *cmd_in;
         flag = true;
     }
 //     std::cout << "New Command : "<<world->GetRealTime()<<std::endl;
@@ -57,7 +64,7 @@ void ModelJointPlugin::WorldUpdateEnd()
     // Here we get all the cmd from users, if we have sent at least N status
     if(statePub->HasConnections() && n_status_sent >= nb_status_needed_to_wait_for_cmd)
     {
-        //cmd_cond.wait(lk);
+        cmd_cond.wait(lk);
         flag = false;
         //std::cout << "Waiting on command..."<<std::endl;
         // BUG: Waiting with chrono is slow ! (gz goes down to 0.01)
@@ -70,29 +77,29 @@ void ModelJointPlugin::WorldUpdateEnd()
     int i=0;
     for(auto j:model->GetJoints())
     {
-        state.set_position(i, j->GetAngle(0).Radian());
-        state.set_velocity(i, j->GetVelocity(0));
-        state.set_effort(i, j->GetForce(0u));
+        state->set_position(i, j->GetAngle(0).Radian());
+        state->set_velocity(i, j->GetVelocity(0));
+        state->set_effort(i, j->GetForce(0u));
         i++;
     }
     
     auto joints = model->GetJoints();
-    for(int i=0; i<cmd.position_size(); ++i)
+    for(int i=0; i<cmd->position_size(); ++i)
     {
 #ifdef GAZEBO_GREATER_6
-        joints[joint_idx_map[cmd.name(i)]]->SetPosition(0,cmd.position(i));
+        joints[joint_idx_map[cmd->name(i)]]->SetPosition(0,cmd->position(i));
 #else
-        joints[joint_idx_map[cmd.name(i)]]->SetAngle(0,cmd.position(i));
+        joints[joint_idx_map[cmd->name(i)]]->SetAngle(0,cmd->position(i));
 #endif
     }
-    for(int i=0; i<cmd.velocity_size(); ++i)
+    for(int i=0; i<cmd->velocity_size(); ++i)
     {
-        joints[joint_idx_map[cmd.name(i)]]->SetVelocity(0,cmd.velocity(i));
+        joints[joint_idx_map[cmd->name(i)]]->SetVelocity(0,cmd->velocity(i));
     }
-    for(int i=0; i<cmd.effort_size(); ++i)
+    for(int i=0; i<cmd->effort_size(); ++i)
     {
-//             std::cout <<cmd.name(i)<<" ("<<joint_idx_map[cmd.name(i)]<<") --> "<<cmd.effort(i)<<"N.m"<<std::endl;
-        joints[joint_idx_map[cmd.name(i)]]->SetForce(0,cmd.effort(i));
+//             std::cout <<cmd->name(i)<<" ("<<joint_idx_map[cmd->name(i)]<<") --> "<<cmd->effort(i)<<"N.m"<<std::endl;
+        joints[joint_idx_map[cmd->name(i)]]->SetForce(0,cmd->effort(i));
     }
     
     lk.unlock();
@@ -101,7 +108,7 @@ void ModelJointPlugin::WorldUpdateEnd()
 
     if(statePub->HasConnections())
     {
-        statePub->Publish(state/*,true*/);
+        statePub->Publish(*state/*,true*/);
         n_status_sent++;
     }else{
         n_status_sent=0;

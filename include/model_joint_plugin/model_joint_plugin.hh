@@ -6,7 +6,15 @@
 #include <gazebo/gazebo.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/common/common.hh>
-#include "model_joint_plugin/joint_state.pb.h"
+
+// Forward declaration of the generated protobuf msg
+namespace joint_state_msgs
+{
+    namespace msgs
+    {
+        class JointState;
+    }
+}
 
 namespace gazebo
 {
@@ -17,6 +25,7 @@ namespace gazebo
 class ModelJointPlugin : public ModelPlugin
 {
 public:
+    ModelJointPlugin();
     void Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/);
 public:
     void onCommand(ConstJointStatePtr& cmd_in);
@@ -26,7 +35,7 @@ public:
 
 private:
     physics::ModelPtr model;
-    joint_state_msgs::msgs::JointState cmd,state;
+    std::shared_ptr<joint_state_msgs::msgs::JointState> cmd,state;
     gazebo::msgs::Time time;
     event::ConnectionPtr world_up_begin,world_up_end;
     transport::NodePtr node;
