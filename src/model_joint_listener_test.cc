@@ -13,7 +13,7 @@ gazebo::transport::PublisherPtr pub;
 void cb(ConstJointStatePtr&_msg)
 {
   // Dump the message contents to stdout.
-  // std::cout << _msg->time().sec()<<" " <<_msg->time().nsec()<<std::endl;
+  std::cout << _msg->time().sec()<<" " <<_msg->time().nsec()<<std::endl;
   pub->Publish(*_msg,true);
 }
 
@@ -28,8 +28,8 @@ int main(int _argc, char **_argv)
   gazebo::transport::NodePtr node(new gazebo::transport::Node());
   node->Init();
   // Listen to Gazebo world_stats topic
-  gazebo::transport::SubscriberPtr sub = node->Subscribe("~/joint_states", cb/*,true*/);
-  pub = node->Advertise<joint_state_msgs::msgs::JointState>("~/joint_states_command");
+  gazebo::transport::SubscriberPtr sub = node->Subscribe("/gazebo/default/kuka_kr10r1100sixx/joint_states", cb/*,true*/);
+  pub = node->Advertise<joint_state_msgs::msgs::JointState>("/gazebo/default/kuka_kr10r1100sixx/joint_states_command");
 
   // Busy wait loop...replace with your own code as needed.
   while (true)

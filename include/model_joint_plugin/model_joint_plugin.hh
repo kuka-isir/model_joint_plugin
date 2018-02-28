@@ -30,7 +30,7 @@ public:
 public:
     void onCommand(ConstJointStatePtr& cmd_in);
 public:
-//     void WorldUpdateBegin();
+    void WorldUpdateBegin();
     void WorldUpdateEnd();
 
 private:

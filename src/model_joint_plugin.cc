@@ -30,7 +30,7 @@ void ModelJointPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
         i++;
     }
 
-    //state->set_allocated_time(&time);
+    state->set_allocated_time(&time);
 
     node = transport::NodePtr(new transport::Node());
     node->Init();
@@ -41,6 +41,7 @@ void ModelJointPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
     statePub = node->Advertise<joint_state_msgs::msgs::JointState>("~/" + model->GetName() + "/joint_states");
     cmdSub = node->Subscribe("~/" + model->GetName() + "/joint_states_command", &ModelJointPlugin::onCommand,this/*,true*/);
 
+    this->world_up_begin = event::Events::ConnectWorldUpdateBegin(std::bind(&ModelJointPlugin::WorldUpdateBegin, this));
     this->world_up_end = event::Events::ConnectWorldUpdateEnd(std::bind(&ModelJointPlugin::WorldUpdateEnd, this));
 }
 
@@ -56,23 +57,31 @@ void ModelJointPlugin::onCommand(ConstJointStatePtr& cmd_in)
     cmd_cond.notify_one();
 }
 
-// void ModelJointPlugin::WorldUpdateBegin() {}
-
-void ModelJointPlugin::WorldUpdateEnd()
+void ModelJointPlugin::WorldUpdateBegin()
 {
     std::unique_lock<std::mutex> lk(mtx);
     // Here we get all the cmd from users, if we have sent at least N status
     if(statePub->HasConnections() && n_status_sent >= nb_status_needed_to_wait_for_cmd)
     {
-        cmd_cond.wait(lk);
+        //cmd_cond.wait(lk);
         flag = false;
         //std::cout << "Waiting on command..."<<std::endl;
         // BUG: Waiting with chrono is slow ! (gz goes down to 0.01)
-        // if(cmd_cond.wait_for(lk,std::chrono::microseconds(2000000)) == std::cv_status::timeout)
-        // {
-        //     gzerr << " Timeout, connection lost or update rate too slow !"<<std::endl;
-        // }
+//         if(cmd_cond.wait_for(lk,std::chrono::microseconds(2000000)) == std::cv_status::timeout)
+//         {
+//             gzerr << " Timeout, connection lost or update rate too slow !"<<std::endl;
+//         }
     }
+}
+
+void ModelJointPlugin::WorldUpdateEnd()
+{
+    std::unique_lock<std::mutex> lk(mtx);
+
+    
+    common::Time t  = world->GetRealTime();
+    time.set_sec(t.sec);
+    time.set_nsec(t.nsec);
     
     int i=0;
     for(auto j:model->GetJoints())
@@ -102,16 +111,25 @@ void ModelJointPlugin::WorldUpdateEnd()
         joints[joint_idx_map[cmd->name(i)]]->SetForce(0,cmd->effort(i));
     }
     
-    lk.unlock();
 
     
 
     if(statePub->HasConnections())
     {
-        statePub->Publish(*state/*,true*/);
+        if(n_status_sent == 0)
+        {
+            std::cout << "New connection" << std::endl;
+        }
+        statePub->Publish(*state,true);
         n_status_sent++;
-    }else{
-        n_status_sent=0;
+    }
+    else
+    {
+        if(n_status_sent > 0)
+        {
+            std::cout << "Connection lost" << std::endl;
+            n_status_sent=0;
+        }
     }
 
     // std::cout << "sta <-- "<<n_status_sent << std::endl;

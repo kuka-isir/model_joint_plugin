@@ -31,7 +31,9 @@ foreach(ITR ${GAZEBO_INCLUDE_DIRS})
   endif()
 endforeach()
 
-set(msgs proto/joint_state.proto)
+set(msgs proto/joint_state.proto
+        ${PROTOBUF_IMPORT_DIRS}/time.proto
+)
 
 if(catkin_FOUND)
     catkin_package(LIBRARIES joint_state_msgs model_joint_plugin INCLUDE_DIRS include)

@@ -1,9 +1,9 @@
 package joint_state_msgs.msgs;
-//import "time.proto";
+import "time.proto";
 
 message JointState
 {
-//optional gazebo.msgs.Time       time            = 1 ;
+required gazebo.msgs.Time       time            = 1 ;
 repeated string                 name            = 2 ;
 repeated double                 position        = 3 [packed=true];
 repeated double                 velocity        = 4 [packed=true];

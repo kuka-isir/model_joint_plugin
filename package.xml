@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <package>
   <name>model_joint_plugin</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>The model_joint_plugin package</description>
   <maintainer email="hoarau@isir.upmc.fr">Antoine Hoarau</maintainer>
 
-  <license>GPL</license>
+  <license>CeCILL-C</license>
 
   <author email="hoarau@isir.upmc.fr">Antoine Hoarau</author>
 
