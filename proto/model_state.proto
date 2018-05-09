@@ -1,0 +1,28 @@
+syntax = "proto2";
+package joint_state_msgs.msgs;
+
+import "time.proto";
+import "joint.proto";
+import "pose.proto";
+import "visual.proto";
+import "vector3d.proto";
+
+message ModelState
+{
+required string                 name            = 1 ;
+optional gazebo.msgs.Time       time            = 2 ;
+repeated string                 name            = 3 ;
+repeated string                 joint_name      = 4 ;
+repeated double                 position        = 5 ;
+repeated double                 velocity        = 6 ;
+repeated double                 effort          = 7 ;
+}
+
+robot.state.JointTorque
+robot.state.JointTorqueAct
+robot.state.JointGravityTorque
+robot.state.Gravity
+robot.state.JointPosition
+robot.state.JointVelocity
+robot.state.WorldToBase
+robot.state.BaseVelocity
