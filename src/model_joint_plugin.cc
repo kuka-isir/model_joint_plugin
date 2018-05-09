@@ -1,7 +1,8 @@
 #include "model_joint_plugin/model_joint_plugin.hh"
 #include "joint_state.pb.h" // generated protobuf header
 
-namespace gazebo {
+namespace gazebo
+{
 
 ModelJointPlugin::ModelJointPlugin()
 : cmd(new joint_state_msgs::msgs::JointState)

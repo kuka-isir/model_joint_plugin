@@ -1,3 +1,4 @@
+syntax = "proto2";
 package joint_state_msgs.msgs;
 //import "time.proto";
 
