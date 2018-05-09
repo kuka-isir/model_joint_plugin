@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(model_joint_plugin)
 
-set(CMAKE_CXX_FLAGS "-std=c++11")
+add_definitions("-std=c++11")
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)
@@ -35,6 +35,11 @@ set(msgs proto/joint_state.proto)
 
 if(catkin_FOUND)
     catkin_package(LIBRARIES joint_state_msgs model_joint_plugin INCLUDE_DIRS include)
+else()
+    set(CATKIN_PACKAGE_LIB_DESTINATION lib)
+    set(CATKIN_PACKAGE_LIB_DESTINATION lib)
+    set(CATKIN_PACKAGE_BIN_DESTINATION bin)
+    set(CATKIN_PACKAGE_INCLUDE_DESTINATION include/${PROJECT_NAME})
 endif()
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${msgs})
@@ -54,20 +59,7 @@ add_library(model_joint_plugin
   src/model_joint_plugin.cc
 )
 
-# orocos_component(gz_model_remote_interface
-#   src/gz_model_remote_interface.cc
-# )
-# target_link_libraries(gz_model_remote_interface
-#   ${catkin_LIBRARIES}
-#   ${GAZEBO_LIBRARIES}
-#   ${Protobuf_LIBRARIES}
-#   joint_state_msgs
-#   ${orocos_kdl_LIBRARIES}
-# )
-# add_dependencies(gz_model_remote_interface joint_state_msgs)
-
 add_executable(model_joint_listener_test src/model_joint_listener_test.cc)
-
 
 add_dependencies(model_joint_plugin joint_state_msgs)
 add_dependencies(model_joint_listener_test joint_state_msgs)
@@ -85,43 +77,20 @@ target_link_libraries(model_joint_listener_test
   joint_state_msgs
 )
 
-if(catkin_FOUND)
-    install(TARGETS model_joint_plugin model_joint_listener_test
-      ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-      LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-      RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-    )
+install(TARGETS model_joint_plugin model_joint_listener_test
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}
-      DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-      FILES_MATCHING PATTERN "*.hh"
-      PATTERN ".svn" EXCLUDE
-    )
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.hh"
+  PATTERN ".svn" EXCLUDE
+)
 
-    install(FILES
-      ${PROTO_HDRS}
-      DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-    )
-else()
-    install(TARGETS model_joint_plugin model_joint_listener_test
-      ARCHIVE DESTINATION lib
-      LIBRARY DESTINATION lib
-      RUNTIME DESTINATION bin
-    )
+install(FILES
+  ${PROTO_HDRS}
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
 
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/${PROJECT_NAME}
-      DESTINATION include
-      FILES_MATCHING PATTERN "*.hh"
-      PATTERN ".svn" EXCLUDE
-    )
-
-    install(FILES
-      ${PROTO_HDRS}
-      DESTINATION include
-    )
-endif()
-
-# orocos_install_headers(DIRECTORY include)
-# orocos_install_headers(${PROTO_HDRS})
-#
-# orocos_generate_package(INCLUDE_DIRS include)
